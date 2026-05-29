@@ -1,0 +1,14 @@
+{# Mensagens flash (sucesso/erro) passadas via querystring ou contexto. #}
+{% set _msg = msg or request.query_params.get('msg') %}
+{% set _erro = erro or request.query_params.get('erro') %}
+
+{% if _msg %}
+  <div class="fade-in mb-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+    <span>✅</span> {{ _msg }}
+  </div>
+{% endif %}
+{% if _erro %}
+  <div class="fade-in mb-4 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800">
+    <span>⚠️</span> {{ _erro }}
+  </div>
+{% endif %}

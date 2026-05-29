@@ -1,0 +1,46 @@
+<nav class="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+    <a href="/" class="flex items-center gap-2 text-lg font-extrabold text-brand-700">
+      <span class="text-2xl">🏆</span> Bolão da Copa do Mundo Arianjo
+    </a>
+
+    {#
+      O admin apenas registra resultados (não faz palpites), então vê uma
+      navegação focada no painel. O participante vê as telas do bolão.
+    #}
+    {% if usuario.is_admin %}
+      {% set nav = [("/admin", "⚙️ Painel"), ("/admin/jogos", "Jogos"), ("/admin/resultados", "Resultados"), ("/admin/mata-mata", "Mata-mata"), ("/ranking", "Ranking")] %}
+    {% else %}
+      {% set nav = [("/", "Dashboard"), ("/jogos", "Jogos"), ("/palpites", "Meus Palpites"), ("/ranking", "Ranking"), ("/historico", "Histórico")] %}
+    {% endif %}
+
+    <!-- Links desktop -->
+    <div class="hidden items-center gap-1 md:flex">
+      {% for href, label in nav %}
+        <a href="{{ href }}"
+           class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 {% if request.url.path == href %}bg-brand-50 text-brand-700{% endif %}">
+          {{ label }}
+        </a>
+      {% endfor %}
+    </div>
+
+    <div class="flex items-center gap-3">
+      <span class="hidden text-sm text-slate-500 sm:inline">Olá, <strong class="text-slate-700">{{ usuario.nome }}</strong></span>
+      <a href="/logout"
+         class="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-700">
+        Sair
+      </a>
+      <!-- Botão menu mobile -->
+      <button id="menu-btn" class="rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden" aria-label="Menu">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Menu mobile -->
+  <div id="mobile-menu" class="hidden border-t border-slate-200 bg-white px-4 py-2 md:hidden">
+    {% for href, label in nav %}
+      <a href="{{ href }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">{{ label }}</a>
+    {% endfor %}
+  </div>
+</nav>

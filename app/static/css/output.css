@@ -1,0 +1,8 @@
+/*
+ * PLACEHOLDER — substituído pelo CSS compilado do Tailwind em produção.
+ *
+ * Em dev, o styling vem do Play CDN (ver base.html). Para gerar o CSS real:
+ *   tailwindcss -i app/static/css/input.css -o app/static/css/output.css --minify
+ *
+ * Mantido vazio aqui apenas para o <link> não retornar 404.
+ */

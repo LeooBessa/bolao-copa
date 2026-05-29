@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Admin · Bolão da Copa do Mundo Arianjo{% endblock %}
+
+{% block content %}
+<div class="fade-in space-y-8">
+  <header>
+    <h1 class="text-2xl font-extrabold text-slate-900">Painel do Administrador</h1>
+    <p class="text-sm text-slate-500">Gerencie jogos, resultados e o chaveamento do mata-mata.</p>
+  </header>
+
+  <div class="grid grid-cols-2 gap-4 lg:grid-cols-5">
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-xs uppercase tracking-wide text-slate-400">Jogos</p>
+      <p class="mt-1 text-3xl font-extrabold text-slate-900">{{ total_jogos }}</p>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-xs uppercase tracking-wide text-slate-400">Abertos</p>
+      <p class="mt-1 text-3xl font-extrabold text-emerald-600">{{ abertos }}</p>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-xs uppercase tracking-wide text-slate-400">Finalizados</p>
+      <p class="mt-1 text-3xl font-extrabold text-slate-900">{{ finalizados }}</p>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-xs uppercase tracking-wide text-slate-400">Participantes</p>
+      <p class="mt-1 text-3xl font-extrabold text-brand-600">{{ total_usuarios }}</p>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-xs uppercase tracking-wide text-slate-400">Palpites</p>
+      <p class="mt-1 text-3xl font-extrabold text-slate-900">{{ total_palpites }}</p>
+    </div>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-3">
+    <a href="/admin/jogos" class="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-brand-300 hover:shadow-md">
+      <div class="mb-2 text-3xl">🗓️</div>
+      <h3 class="font-bold text-slate-900 group-hover:text-brand-700">Gerenciar jogos</h3>
+      <p class="text-sm text-slate-500">Cadastrar, editar e controlar status (abrir/fechar).</p>
+    </a>
+    <a href="/admin/resultados" class="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-brand-300 hover:shadow-md">
+      <div class="mb-2 text-3xl">🏁</div>
+      <h3 class="font-bold text-slate-900 group-hover:text-brand-700">Atualizar resultados</h3>
+      <p class="text-sm text-slate-500">Registrar o placar oficial e pontuar os palpites.</p>
+    </a>
+    <a href="/admin/mata-mata" class="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-brand-300 hover:shadow-md">
+      <div class="mb-2 text-3xl">🏆</div>
+      <h3 class="font-bold text-slate-900 group-hover:text-brand-700">Mata-mata</h3>
+      <p class="text-sm text-slate-500">Definir os times que substituem os placeholders.</p>
+    </a>
+  </div>
+</div>
+{% endblock %}

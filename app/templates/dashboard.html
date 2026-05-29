@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import status_badge, placar %}
+{% block title %}Dashboard · Bolão da Copa do Mundo Arianjo{% endblock %}
+
+{% block content %}
+<div class="fade-in space-y-8">
+  <header>
+    <h1 class="text-2xl font-extrabold text-slate-900">Olá, {{ usuario.nome }} 👋</h1>
+    <p class="text-sm text-slate-500">Aqui está o resumo da sua participação no bolão.</p>
+  </header>
+
+  <!-- Cartões de estatística -->
+  <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Pontuação</p>
+      <p class="mt-1 text-3xl font-extrabold text-brand-600">{{ pontos }}</p>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Posição</p>
+      <p class="mt-1 text-3xl font-extrabold text-slate-900">{{ posicao }}<span class="text-base font-medium text-slate-400">/{{ total_jogadores }}</span></p>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Acertos</p>
+      <p class="mt-1 text-3xl font-extrabold text-emerald-600">{{ acertos }}</p>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Palpites</p>
+      <p class="mt-1 text-3xl font-extrabold text-slate-900">{{ total_palpites }}</p>
+    </div>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <!-- Próximos jogos -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="font-bold text-slate-900">Próximos jogos</h2>
+        <a href="/palpites" class="text-sm font-medium text-brand-600 hover:text-brand-700">Palpitar →</a>
+      </div>
+      {% if proximos %}
+        <ul class="divide-y divide-slate-100">
+          {% for j in proximos %}
+            <li class="flex items-center justify-between py-3">
+              <div class="text-sm">
+                <span class="font-semibold text-slate-700">{{ j.time_casa }} <span class="text-slate-400">x</span> {{ j.time_fora }}</span>
+                <p class="text-xs text-slate-400">{{ j.fase.label }} · {{ j.data_jogo | data }}</p>
+              </div>
+              {{ status_badge(j.status) }}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="py-6 text-center text-sm text-slate-400">Nenhum jogo aberto no momento.</p>
+      {% endif %}
+    </section>
+
+    <!-- Últimos resultados -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="font-bold text-slate-900">Últimos resultados</h2>
+        <a href="/historico" class="text-sm font-medium text-brand-600 hover:text-brand-700">Histórico →</a>
+      </div>
+      {% if ultimos_resultados %}
+        <ul class="divide-y divide-slate-100">
+          {% for j in ultimos_resultados %}
+            <li class="flex items-center justify-between py-3">
+              <div class="text-sm">
+                <span class="font-semibold text-slate-700">{{ j.time_casa }} <span class="text-slate-400">x</span> {{ j.time_fora }}</span>
+                <p class="text-xs text-slate-400">{{ j.fase.label }}</p>
+              </div>
+              <div class="text-sm">{{ placar(j) }}</div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="py-6 text-center text-sm text-slate-400">Nenhum resultado ainda.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

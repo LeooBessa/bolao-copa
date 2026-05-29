@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import placar %}
+{% block title %}Histórico · Bolão da Copa do Mundo Arianjo{% endblock %}
+
+{% block content %}
+<div class="fade-in space-y-6">
+  <header class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-extrabold text-slate-900">Histórico</h1>
+      <p class="text-sm text-slate-500">Jogos finalizados, seus palpites e pontos.</p>
+    </div>
+    <div class="rounded-xl bg-brand-600 px-4 py-2 text-center text-white">
+      <p class="text-xs uppercase tracking-wide text-brand-100">Total</p>
+      <p class="text-xl font-extrabold">{{ total_pontos }} pts</p>
+    </div>
+  </header>
+
+  <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-slate-100 text-sm">
+      <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-400">
+        <tr>
+          <th class="px-4 py-3 text-left">Jogo</th>
+          <th class="px-4 py-3 text-center">Resultado</th>
+          <th class="px-4 py-3 text-center">Seu palpite</th>
+          <th class="px-4 py-3 text-right">Pontos</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for item in itens %}
+          {% set j = item.jogo %}
+          {% set p = item.palpite %}
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-3">
+              <span class="font-medium text-slate-700">{{ j.time_casa }} <span class="text-slate-400">x</span> {{ j.time_fora }}</span>
+              <p class="text-xs text-slate-400">{{ j.fase.label }} · {{ j.data_jogo | data }}</p>
+            </td>
+            <td class="px-4 py-3 text-center">{{ placar(j) }}</td>
+            <td class="px-4 py-3 text-center">
+              {% if p %}
+                <span class="font-medium text-slate-700">{{ p.gols_casa_palpite }}x{{ p.gols_fora_palpite }}</span>
+                {% if j.is_mata_mata and p.classificado_palpite %}<span class="block text-xs text-slate-400">avança: {{ p.classificado_palpite }}</span>{% endif %}
+              {% else %}
+                <span class="text-slate-300">sem palpite</span>
+              {% endif %}
+            </td>
+            <td class="px-4 py-3 text-right">
+              {% if p %}
+                {% set cor = 'text-emerald-600' if p.pontos == 3 else ('text-brand-600' if p.pontos == 1 else 'text-slate-400') %}
+                <span class="text-lg font-extrabold {{ cor }}">+{{ p.pontos }}</span>
+              {% else %}
+                <span class="text-slate-300">—</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="4" class="px-4 py-8 text-center text-slate-400">Nenhum jogo finalizado ainda.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

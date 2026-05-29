@@ -1,0 +1,31 @@
+# Ambiente / segredos
+.env
+.env.*
+!.env.example
+
+# Banco local
+*.db
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Vercel
+.vercel/
+
+# Node (Tailwind CLI)
+node_modules/
+
+# Sistema operacional / editores
+.DS_Store
+.idea/
+.vscode/
+.vercel

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import status_badge, placar %}
+{% block title %}Admin · Resultados{% endblock %}
+
+{% block content %}
+<div class="fade-in space-y-6">
+  <header>
+    <h1 class="text-2xl font-extrabold text-slate-900">Atualizar resultados</h1>
+    <p class="text-sm text-slate-500">
+      Ao registrar o placar oficial, o jogo é finalizado e os palpites são pontuados
+      automaticamente. No mata-mata, informe quem se classificou.
+    </p>
+  </header>
+
+  {% include "partials/flash.html" %}
+
+  <div class="space-y-3">
+    {% for j in jogos %}
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div class="text-sm">
+            <span class="font-semibold text-slate-800">{{ j.time_casa }} <span class="text-slate-400">x</span> {{ j.time_fora }}</span>
+            <span class="ml-2 text-xs text-slate-400">{{ j.fase.label }} · {{ j.data_jogo | data }}</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm">
+            {{ status_badge(j.status) }}
+            {% if j.tem_resultado %}<span class="text-slate-500">Atual: {{ placar(j) }}</span>{% endif %}
+          </div>
+        </div>
+
+        <form method="post" action="/admin/resultados/{{ j.id }}" class="flex flex-wrap items-end gap-3">
+          <div>
+            <label class="mb-1 block text-xs font-medium text-slate-500">Gols {{ j.time_casa }}</label>
+            <input type="number" name="gols_casa_real" min="0" max="99" required
+                   value="{{ j.gols_casa_real if j.gols_casa_real is not none else '' }}"
+                   class="w-20 rounded-lg border border-slate-300 px-3 py-2 text-center text-sm" />
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-medium text-slate-500">Gols {{ j.time_fora }}</label>
+            <input type="number" name="gols_fora_real" min="0" max="99" required
+                   value="{{ j.gols_fora_real if j.gols_fora_real is not none else '' }}"
+                   class="w-20 rounded-lg border border-slate-300 px-3 py-2 text-center text-sm" />
+          </div>
+          {% if j.is_mata_mata %}
+            <div>
+              <label class="mb-1 block text-xs font-medium text-slate-500">Classificado</label>
+              <select name="classificado_real" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                <option value="">Selecione...</option>
+                <option value="{{ j.time_casa }}" {% if j.classificado_real == j.time_casa %}selected{% endif %}>{{ j.time_casa }}</option>
+                <option value="{{ j.time_fora }}" {% if j.classificado_real == j.time_fora %}selected{% endif %}>{{ j.time_fora }}</option>
+              </select>
+            </div>
+          {% endif %}
+          <button class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+            {{ 'Atualizar' if j.tem_resultado else 'Registrar e pontuar' }}
+          </button>
+        </form>
+      </div>
+    {% else %}
+      <p class="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-400">Nenhum jogo cadastrado.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
