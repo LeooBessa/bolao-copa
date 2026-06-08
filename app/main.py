@@ -7,11 +7,21 @@ Exposto como `app` para o uvicorn (dev) e para a Vercel (api/index.py).
 from __future__ import annotations
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.auth.dependencies import RedirectException
-from app.routes import admin, auth, dashboard, historico, jogos, palpites, ranking
+from app.routes import (
+    admin,
+    api,
+    auth,
+    dashboard,
+    historico,
+    jogos,
+    palpites,
+    ranking,
+)
 from app.templating import STATIC_DIR
 
 
@@ -20,6 +30,15 @@ def create_app() -> FastAPI:
         title="Bolão da Copa do Mundo Arianjo",
         docs_url=None,  # API interna; sem Swagger público
         redoc_url=None,
+    )
+
+    # CORS — o app mobile (React Native) consome a API de outra origem.
+    # A API usa Bearer token (não cookies), então liberar origens é seguro aqui.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     # Arquivos estáticos (CSS compilado do Tailwind, JS).
@@ -40,6 +59,7 @@ def create_app() -> FastAPI:
     app.include_router(ranking.router)
     app.include_router(historico.router)
     app.include_router(admin.router)
+    app.include_router(api.router)  # API REST JSON (mobile)
 
     return app
 

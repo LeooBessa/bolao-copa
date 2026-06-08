@@ -13,3 +13,6 @@ __pycache__/
 .ruff_cache/
 node_modules/
 .DS_Store
+
+# App mobile (cliente React Native) — não faz parte da função Python na Vercel
+mobile/

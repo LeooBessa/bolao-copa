@@ -1,19 +1,27 @@
-# ⚽ Bolão da Copa 2026
+# 🏆 Bolão da Copa do Mundo Arianjo
 
 Sistema completo de bolão da Copa do Mundo 2026 (formato 48 times / 12 grupos),
 para ~8 participantes. Cada usuário cria conta, registra palpites, acompanha
 jogos, ranking e histórico; o administrador cadastra jogos, registra resultados
 (com pontuação automática) e controla o chaveamento do mata-mata.
 
+> **Sistema distribuído:** clientes **web** e **mobile** (React Native) que
+> conversam com um **microsserviço REST** (FastAPI na nuvem) e um **banco na
+> nuvem** (Supabase). O app mobile usa o **sensor acelerômetro**. A arquitetura,
+> os requisitos atendidos e o roteiro de defesa estão em
+> [ARQUITETURA.md](ARQUITETURA.md). O app mobile está em [mobile/](mobile/).
+
 ## 🧱 Stack
 
 | Camada        | Tecnologia                                   |
 | ------------- | -------------------------------------------- |
 | Backend       | Python · FastAPI                             |
-| Frontend      | Jinja2 · Tailwind CSS · JavaScript           |
+| Web           | Jinja2 · Tailwind CSS · JavaScript           |
+| Mobile        | React Native (Expo) + expo-sensors           |
+| API           | REST/JSON (`/api/*`) com JWT Bearer          |
 | ORM           | SQLAlchemy 2.x                               |
 | Banco         | Supabase PostgreSQL (pooler em serverless)   |
-| Autenticação  | JWT em cookie httpOnly + bcrypt              |
+| Autenticação  | JWT (cookie na web, Bearer no mobile) + bcrypt |
 | Migrations    | Alembic                                      |
 | Deploy        | Vercel (Python ASGI)                         |
 
