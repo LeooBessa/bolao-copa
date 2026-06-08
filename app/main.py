@@ -32,7 +32,7 @@ def create_app() -> FastAPI:
         redoc_url=None,
     )
 
-    # CORS — o app mobile (React Native) consome a API de outra origem.
+    # CORS — permite que clientes/integrações externas consumam a API REST.
     # A API usa Bearer token (não cookies), então liberar origens é seguro aqui.
     app.add_middleware(
         CORSMiddleware,

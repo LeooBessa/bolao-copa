@@ -1,4 +1,4 @@
-"""API REST (JSON) — consumida pelo app mobile (React Native).
+"""API REST (JSON) — microsserviço para clientes/integrações externas.
 
 Mesma lógica de negócio da web (services reutilizados), mas com:
   * autenticação via Bearer token (header Authorization), não cookie;

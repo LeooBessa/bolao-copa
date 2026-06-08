@@ -5,11 +5,10 @@ para ~8 participantes. Cada usuário cria conta, registra palpites, acompanha
 jogos, ranking e histórico; o administrador cadastra jogos, registra resultados
 (com pontuação automática) e controla o chaveamento do mata-mata.
 
-> **Sistema distribuído:** clientes **web** e **mobile** (React Native) que
-> conversam com um **microsserviço REST** (FastAPI na nuvem) e um **banco na
-> nuvem** (Supabase). O app mobile usa o **sensor acelerômetro**. A arquitetura,
-> os requisitos atendidos e o roteiro de defesa estão em
-> [ARQUITETURA.md](ARQUITETURA.md). O app mobile está em [mobile/](mobile/).
+> **Sistema distribuído:** cliente **web** que conversa, por rede, com um
+> **microsserviço REST** (FastAPI na nuvem/Vercel) e um **banco de dados na
+> nuvem** (Supabase). A arquitetura, os requisitos atendidos e o roteiro de
+> defesa estão em [ARQUITETURA.md](ARQUITETURA.md).
 
 ## 🧱 Stack
 
@@ -17,11 +16,10 @@ jogos, ranking e histórico; o administrador cadastra jogos, registra resultados
 | ------------- | -------------------------------------------- |
 | Backend       | Python · FastAPI                             |
 | Web           | Jinja2 · Tailwind CSS · JavaScript           |
-| Mobile        | React Native (Expo) + expo-sensors           |
 | API           | REST/JSON (`/api/*`) com JWT Bearer          |
 | ORM           | SQLAlchemy 2.x                               |
 | Banco         | Supabase PostgreSQL (pooler em serverless)   |
-| Autenticação  | JWT (cookie na web, Bearer no mobile) + bcrypt |
+| Autenticação  | JWT (cookie httpOnly na web, Bearer na API) + bcrypt |
 | Migrations    | Alembic                                      |
 | Deploy        | Vercel (Python ASGI)                         |
 
