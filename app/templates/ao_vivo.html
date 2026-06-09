@@ -25,26 +25,43 @@
 {% endblock %}
 
 {% block scripts %}
+<style>
+  /* Piscadinha rápida no selo a cada atualização (prova visual de que atualizou). */
+  @keyframes flashAtualizado { from { opacity: .2; } to { opacity: 1; } }
+  #ao-vivo-status.flash { animation: flashAtualizado .5s ease; }
+</style>
 <script>
   // Atualização suave: busca só o conteúdo e troca no lugar, sem piscar a
   // página nem perder o scroll. Cada cliente faz polling e converge para o
   // mesmo placar (sincronização de estado entre clientes).
+  var statusEl = document.getElementById("ao-vivo-status");
+
+  function marcarAtualizado() {
+    if (!statusEl) return;
+    var hora = new Date().toLocaleTimeString("pt-BR"); // HH:MM:SS — muda a cada ciclo
+    statusEl.textContent = "· atualizado às " + hora;
+    // Re-dispara a animação de "piscar".
+    statusEl.classList.remove("flash");
+    void statusEl.offsetWidth;
+    statusEl.classList.add("flash");
+  }
+
   async function atualizarAoVivo() {
-    const alvo = document.getElementById("ao-vivo-conteudo");
-    const status = document.getElementById("ao-vivo-status");
     try {
-      const resp = await fetch("/ao-vivo/fragmento", {
+      var resp = await fetch("/ao-vivo/fragmento", {
         headers: { "X-Requested-With": "fetch" },
         cache: "no-store",
       });
       if (resp.ok) {
-        alvo.innerHTML = await resp.text();
-        if (status) status.textContent = "· atualizado agora";
+        document.getElementById("ao-vivo-conteudo").innerHTML = await resp.text();
+        marcarAtualizado();
       }
     } catch (e) {
       /* offline momentâneo — tenta de novo no próximo ciclo */
     }
   }
+
+  marcarAtualizado();            // carimba a hora do carregamento inicial
   setInterval(atualizarAoVivo, 8000);
 </script>
 {% endblock %}
