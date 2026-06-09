@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models.enums import StatusJogo
+from app.models.enums import Fase, StatusJogo
 from app.models.jogo import Jogo
 from app.models.palpite import Palpite
 from app.schemas.palpite import PalpiteInput
@@ -21,6 +23,36 @@ def palpite_travado(jogo: Jogo) -> bool:
     if jogo.status in (StatusJogo.FECHADO, StatusJogo.FINALIZADO):
         return True
     return now_utc() >= ensure_aware(jogo.data_jogo)
+
+
+def fechar_todos_palpites(db: Session) -> int:
+    """Trava TODOS os jogos não finalizados (ninguém pode palpitar). Retorna nº alterado."""
+    n = 0
+    for j in db.scalars(select(Jogo)):
+        if j.status not in (StatusJogo.FINALIZADO, StatusJogo.FECHADO):
+            j.status = StatusJogo.FECHADO
+            n += 1
+    db.commit()
+    return n
+
+
+def abrir_palpites_grupos(db: Session, *, futuro: bool = False) -> int:
+    """Reabre os jogos da fase de grupos não finalizados. Retorna nº alterado.
+
+    Com `futuro=True`, empurra a data de jogos cujo horário já passou para +3h,
+    garantindo que destravem (a trava também considera o horário do jogo).
+    """
+    n = 0
+    agora = now_utc()
+    for j in db.scalars(select(Jogo).where(Jogo.fase == Fase.GRUPOS)):
+        if j.status == StatusJogo.FINALIZADO:
+            continue
+        j.status = StatusJogo.ABERTO
+        if futuro and ensure_aware(j.data_jogo) <= agora:
+            j.data_jogo = agora + timedelta(hours=3)
+        n += 1
+    db.commit()
+    return n
 
 
 def buscar_palpite(

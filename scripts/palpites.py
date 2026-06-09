@@ -14,41 +14,9 @@ fechados por terem times "A definir").
 from __future__ import annotations
 
 import argparse
-from datetime import timedelta
-
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 from app.database.session import SessionLocal
-from app.models.enums import Fase, StatusJogo
-from app.models.jogo import Jogo
-from app.utils.time import ensure_aware, now_utc
-
-
-def fechar(db: Session) -> int:
-    n = 0
-    for j in db.scalars(select(Jogo)):
-        if j.status not in (StatusJogo.FINALIZADO, StatusJogo.FECHADO):
-            j.status = StatusJogo.FECHADO
-            n += 1
-    db.commit()
-    return n
-
-
-def abrir(db: Session, *, futuro: bool = False) -> int:
-    n = 0
-    agora = now_utc()
-    for j in db.scalars(select(Jogo).where(Jogo.fase == Fase.GRUPOS)):
-        if j.status == StatusJogo.FINALIZADO:
-            continue
-        j.status = StatusJogo.ABERTO
-        # Se pedido, empurra a data pra frente para garantir que destrave
-        # (a trava também considera o horário do jogo).
-        if futuro and ensure_aware(j.data_jogo) <= agora:
-            j.data_jogo = agora + timedelta(hours=3)
-        n += 1
-    db.commit()
-    return n
+from app.services.palpites import abrir_palpites_grupos, fechar_todos_palpites
 
 
 def main() -> None:
@@ -65,10 +33,10 @@ def main() -> None:
 
     with SessionLocal() as db:
         if args.fechar:
-            n = fechar(db)
+            n = fechar_todos_palpites(db)
             print(f"🔒 {n} jogos fechados. Ninguém pode palpitar.")
         else:
-            n = abrir(db, futuro=args.futuro)
+            n = abrir_palpites_grupos(db, futuro=args.futuro)
             extra = " (datas ajustadas para +3h)" if args.futuro else ""
             print(f"🔓 {n} jogos de grupos reabertos{extra}.")
 

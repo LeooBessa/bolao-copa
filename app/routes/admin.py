@@ -22,6 +22,7 @@ from app.models.jogo import Jogo
 from app.models.palpite import Palpite
 from app.models.usuario import Usuario
 from app.schemas.jogo import JogoInput, ResultadoInput
+from app.services.palpites import abrir_palpites_grupos, fechar_todos_palpites
 from app.services.scoring import aplicar_resultado
 from app.templating import render
 from app.utils.time import ensure_aware
@@ -70,6 +71,12 @@ def dashboard_admin(
         )
         or 0
     )
+    fechados = (
+        db.scalar(
+            select(func.count(Jogo.id)).where(Jogo.status == StatusJogo.FECHADO)
+        )
+        or 0
+    )
     total_usuarios = (
         db.scalar(
             select(func.count(Usuario.id)).where(Usuario.is_admin.is_(False))
@@ -85,10 +92,34 @@ def dashboard_admin(
             "total_jogos": total_jogos,
             "finalizados": finalizados,
             "abertos": abertos,
+            "fechados": fechados,
             "total_usuarios": total_usuarios,
             "total_palpites": total_palpites,
         },
         usuario=admin,
+    )
+
+
+# --- Abrir/fechar palpites em massa ------------------------------------
+@router.post("/palpites/fechar-todos")
+def fechar_todos(
+    admin: Usuario = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    n = fechar_todos_palpites(db)
+    return _redir(
+        "/admin", msg=f"🔒 {n} jogos fechados. Ninguém pode mais palpitar."
+    )
+
+
+@router.post("/palpites/abrir-todos")
+def abrir_todos(
+    admin: Usuario = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    n = abrir_palpites_grupos(db)
+    return _redir(
+        "/admin", msg=f"🔓 {n} jogos da fase de grupos reabertos para palpites."
     )
 
 

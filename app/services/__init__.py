@@ -1,6 +1,11 @@
 """Camada de serviços: regras de negócio (travamento, pontuação, ranking)."""
 
-from app.services.palpites import palpite_travado, salvar_palpite
+from app.services.palpites import (
+    abrir_palpites_grupos,
+    fechar_todos_palpites,
+    palpite_travado,
+    salvar_palpite,
+)
 from app.services.ranking import montar_ranking, posicao_do_usuario
 from app.services.scoring import (
     aplicar_resultado,
@@ -11,6 +16,8 @@ from app.services.scoring import (
 __all__ = [
     "palpite_travado",
     "salvar_palpite",
+    "fechar_todos_palpites",
+    "abrir_palpites_grupos",
     "montar_ranking",
     "posicao_do_usuario",
     "aplicar_resultado",
