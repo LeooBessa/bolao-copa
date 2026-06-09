@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from app.auth.dependencies import RedirectException
 from app.routes import (
     admin,
+    ao_vivo,
     api,
     auth,
     dashboard,
@@ -58,8 +59,9 @@ def create_app() -> FastAPI:
     app.include_router(palpites.router)
     app.include_router(ranking.router)
     app.include_router(historico.router)
+    app.include_router(ao_vivo.router)
     app.include_router(admin.router)
-    app.include_router(api.router)  # API REST JSON (mobile)
+    app.include_router(api.router)  # API REST JSON
 
     return app
 

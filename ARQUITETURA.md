@@ -106,6 +106,11 @@ Erros seguem HTTP: `401` (sem/expirado token), `403` (admin não palpita),
 - **Consistência e concorrência:** transações + restrição única
   `(usuario_id, jogo_id)` garantem 1 palpite por jogo mesmo com acessos
   simultâneos; a pontuação é gravada na transação do resultado.
+- **Sincronização de estado entre clientes (tabela "Ao Vivo"):** quando o admin
+  registra um gol, o placar parcial vira estado compartilhado no servidor/banco;
+  os vários clientes (em máquinas diferentes) fazem **polling** (auto-refresh) e
+  **convergem** para o mesmo placar/pontuação provisória logo depois — uma
+  ilustração de **consistência eventual** e sincronização cliente-servidor.
 
 ## 6. Roteiro de defesa (perguntas prováveis)
 

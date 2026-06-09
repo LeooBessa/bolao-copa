@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Ao Vivo · Bolão da Copa do Mundo Arianjo{% endblock %}
+
+{% block content %}
+<div class="fade-in space-y-8">
+  <header class="flex items-center justify-between">
+    <div>
+      <h1 class="flex items-center gap-2 text-2xl font-extrabold text-slate-900">
+        <span class="relative flex h-3 w-3">
+          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"></span>
+          <span class="relative inline-flex h-3 w-3 rounded-full bg-rose-500"></span>
+        </span>
+        Ao Vivo
+      </h1>
+      <p class="text-sm text-slate-500">Pontuação provisória — atualiza sozinha a cada poucos segundos.</p>
+    </div>
+    <button onclick="location.reload()" class="rounded-lg bg-slate-800 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-700">↻ Atualizar</button>
+  </header>
+
+  {% if not tabelas %}
+    <div class="rounded-2xl border border-slate-200 bg-white p-10 text-center">
+      <div class="mb-2 text-4xl">📺</div>
+      <p class="font-semibold text-slate-700">Nenhum jogo ao vivo no momento.</p>
+      <p class="text-sm text-slate-400">Quando um jogo começar, a tabela provisória aparece aqui.</p>
+    </div>
+  {% endif %}
+
+  <!-- Tabelas por jogo ao vivo -->
+  {% for t in tabelas %}
+    {% set j = t.jogo %}
+    <section class="rounded-2xl border border-rose-200 bg-white shadow-sm">
+      <div class="flex items-center justify-center gap-4 border-b border-slate-100 p-5">
+        <span class="flex-1 text-right text-lg font-bold text-slate-800">{{ j.time_casa }}</span>
+        <span class="rounded-xl bg-slate-900 px-4 py-1 text-2xl font-extrabold text-white">
+          {{ j.gols_casa_ao_vivo or 0 }} <span class="text-slate-500">x</span> {{ j.gols_fora_ao_vivo or 0 }}
+        </span>
+        <span class="flex-1 text-left text-lg font-bold text-slate-800">{{ j.time_fora }}</span>
+      </div>
+      <div class="overflow-hidden">
+        <table class="min-w-full divide-y divide-slate-100 text-sm">
+          <tbody class="divide-y divide-slate-100">
+            {% for l in t.linhas %}
+              <tr class="{% if l.usuario_id == meu_id %}bg-brand-50{% endif %}">
+                <td class="px-4 py-2.5 font-medium text-slate-700">
+                  {{ l.nome }}{% if l.usuario_id == meu_id %} <span class="text-xs text-brand-600">(você)</span>{% endif %}
+                </td>
+                <td class="px-4 py-2.5 text-center text-slate-500">
+                  {% if l.palpite %}{{ l.palpite.gols_casa_palpite }}x{{ l.palpite.gols_fora_palpite }}{% if j.is_mata_mata and l.palpite.classificado_palpite %} ({{ l.palpite.classificado_palpite }}){% endif %}{% else %}<span class="text-slate-300">—</span>{% endif %}
+                </td>
+                <td class="px-4 py-2.5 text-right">
+                  {% set cor = 'text-emerald-600' if l.pontos == 3 else ('text-brand-600' if l.pontos == 1 else 'text-slate-300') %}
+                  <span class="font-extrabold {{ cor }}">+{{ l.pontos }}</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  {% endfor %}
+
+  <!-- Ranking geral provisório -->
+  <section>
+    <h2 class="mb-3 text-lg font-extrabold text-slate-900">Classificação provisória</h2>
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <table class="min-w-full divide-y divide-slate-100 text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-400">
+          <tr>
+            <th class="px-4 py-3 text-left">#</th>
+            <th class="px-4 py-3 text-left">Participante</th>
+            <th class="px-4 py-3 text-center">Oficial</th>
+            <th class="px-4 py-3 text-center">Ao vivo</th>
+            <th class="px-4 py-3 text-right">Total</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for l in ranking %}
+            <tr class="{% if l.usuario_id == meu_id %}bg-brand-50{% else %}hover:bg-slate-50{% endif %}">
+              <td class="px-4 py-3">
+                {% if l.posicao == 1 %}🥇{% elif l.posicao == 2 %}🥈{% elif l.posicao == 3 %}🥉{% else %}<span class="font-semibold text-slate-400">{{ l.posicao }}</span>{% endif %}
+              </td>
+              <td class="px-4 py-3 font-medium text-slate-700">
+                {{ l.nome }}{% if l.usuario_id == meu_id %} <span class="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-semibold text-brand-700">você</span>{% endif %}
+              </td>
+              <td class="px-4 py-3 text-center text-slate-500">{{ l.oficial }}</td>
+              <td class="px-4 py-3 text-center">
+                {% if l.provisorio %}<span class="font-semibold text-rose-500">+{{ l.provisorio }}</span>{% else %}<span class="text-slate-300">—</span>{% endif %}
+              </td>
+              <td class="px-4 py-3 text-right text-lg font-extrabold text-brand-600">{{ l.total }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="mt-2 text-center text-xs text-slate-400">
+      "Ao vivo" são pontos provisórios — viram oficiais quando o admin registrar o resultado final.
+    </p>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {# Polling: cada cliente recarrega sozinho, convergindo para o placar atual. #}
+  <script>setTimeout(function () { location.reload(); }, 8000);</script>
+{% endblock %}

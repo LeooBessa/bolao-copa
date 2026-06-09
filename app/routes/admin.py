@@ -123,6 +123,78 @@ def abrir_todos(
     )
 
 
+# --- Tabela ao vivo (placar parcial) -----------------------------------
+@router.get("/ao-vivo")
+def admin_ao_vivo(
+    request: Request,
+    admin: Usuario = Depends(require_admin),
+    db: Session = Depends(get_db),
+    msg: str | None = None,
+    erro: str | None = None,
+) -> object:
+    # Jogos não finalizados (candidatos a ficar ao vivo).
+    jogos = [j for j in _jogos_ordenados(db) if j.status != StatusJogo.FINALIZADO]
+    return render(
+        request,
+        "admin/ao_vivo.html",
+        {"jogos": jogos, "msg": msg, "erro": erro},
+        usuario=admin,
+    )
+
+
+@router.post("/ao-vivo/{jogo_id}/iniciar")
+def ao_vivo_iniciar(
+    jogo_id: int,
+    admin: Usuario = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    jogo = db.get(Jogo, jogo_id)
+    if jogo is None or jogo.status == StatusJogo.FINALIZADO:
+        return _redir("/admin/ao-vivo", erro="Jogo inválido.")
+    jogo.ao_vivo = True
+    if jogo.gols_casa_ao_vivo is None:
+        jogo.gols_casa_ao_vivo = 0
+    if jogo.gols_fora_ao_vivo is None:
+        jogo.gols_fora_ao_vivo = 0
+    db.commit()
+    return _redir("/admin/ao-vivo", msg=f"🔴 {jogo.time_casa} x {jogo.time_fora} está AO VIVO.")
+
+
+@router.post("/ao-vivo/{jogo_id}/gol")
+def ao_vivo_gol(
+    jogo_id: int,
+    time: str = Form(...),
+    delta: int = Form(1),
+    admin: Usuario = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    jogo = db.get(Jogo, jogo_id)
+    if jogo is None or not jogo.ao_vivo:
+        return _redir("/admin/ao-vivo", erro="Jogo não está ao vivo.")
+    if time == "casa":
+        jogo.gols_casa_ao_vivo = max(0, (jogo.gols_casa_ao_vivo or 0) + delta)
+    elif time == "fora":
+        jogo.gols_fora_ao_vivo = max(0, (jogo.gols_fora_ao_vivo or 0) + delta)
+    else:
+        return _redir("/admin/ao-vivo", erro="Time inválido.")
+    db.commit()
+    return _redir("/admin/ao-vivo")
+
+
+@router.post("/ao-vivo/{jogo_id}/encerrar")
+def ao_vivo_encerrar(
+    jogo_id: int,
+    admin: Usuario = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    jogo = db.get(Jogo, jogo_id)
+    if jogo is None:
+        return _redir("/admin/ao-vivo", erro="Jogo não encontrado.")
+    jogo.ao_vivo = False
+    db.commit()
+    return _redir("/admin/ao-vivo", msg="Transmissão ao vivo encerrada.")
+
+
 # --- Gerenciar jogos (CRUD) --------------------------------------------
 @router.get("/jogos")
 def gerenciar_jogos(

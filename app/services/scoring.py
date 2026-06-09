@@ -13,8 +13,9 @@ Mata-mata (o classificado faz parte do resultado; empate sozinho não pontua)
   - acertou empate mas errou classificado ... 0 pontos
   - errou ................................... 0 pontos
 
-A pontuação é GRAVADA em `palpite.pontos` quando o admin registra o resultado
-oficial (`aplicar_resultado`). Nunca é recalculada a cada carregamento.
+A pontuação oficial é GRAVADA em `palpite.pontos` quando o admin registra o
+resultado (`aplicar_resultado`). As mesmas regras são reaproveitadas para a
+pontuação PROVISÓRIA (tabela ao vivo), aplicando-as ao placar parcial.
 """
 
 from __future__ import annotations
@@ -35,61 +36,107 @@ def _resultado_1x2(gols_casa: int, gols_fora: int) -> str:
     return "X"
 
 
-def calcular_pontos_grupos(palpite: Palpite, jogo: Jogo) -> int:
-    """Pontuação de um palpite na fase de grupos."""
-    if not jogo.tem_resultado:
+# --- Núcleo das regras (recebem placares explícitos) -------------------
+def pontos_grupos(
+    gc_palpite: int, gf_palpite: int, gc_real: int | None, gf_real: int | None
+) -> int:
+    """Pontos de um palpite contra um placar de grupos qualquer."""
+    if gc_real is None or gf_real is None:
         return 0
-
-    placar_exato = (
-        palpite.gols_casa_palpite == jogo.gols_casa_real
-        and palpite.gols_fora_palpite == jogo.gols_fora_real
-    )
-    if placar_exato:
+    if gc_palpite == gc_real and gf_palpite == gf_real:
         return 3
-
-    acertou_resultado = _resultado_1x2(
-        palpite.gols_casa_palpite, palpite.gols_fora_palpite
-    ) == _resultado_1x2(jogo.gols_casa_real, jogo.gols_fora_real)
-    return 1 if acertou_resultado else 0
-
-
-def _classificado_do_palpite(palpite: Palpite, jogo: Jogo) -> str | None:
-    """Time que o usuário previu que avança.
-
-    Se o palpite não é empate, o classificado é implícito pelo placar; se for
-    empate, vem de `classificado_palpite`.
-    """
-    if palpite.gols_casa_palpite > palpite.gols_fora_palpite:
-        return jogo.time_casa
-    if palpite.gols_fora_palpite > palpite.gols_casa_palpite:
-        return jogo.time_fora
-    return palpite.classificado_palpite
-
-
-def calcular_pontos_mata_mata(palpite: Palpite, jogo: Jogo) -> int:
-    """Pontuação de um palpite no mata-mata."""
-    if not jogo.tem_resultado or not jogo.classificado_real:
-        return 0
-
-    acertou_classificado = (
-        _classificado_do_palpite(palpite, jogo) == jogo.classificado_real
+    acertou = _resultado_1x2(gc_palpite, gf_palpite) == _resultado_1x2(
+        gc_real, gf_real
     )
-    if not acertou_classificado:
-        # Inclui o caso "acertou empate mas errou quem avança".
-        return 0
+    return 1 if acertou else 0
 
-    placar_exato = (
-        palpite.gols_casa_palpite == jogo.gols_casa_real
-        and palpite.gols_fora_palpite == jogo.gols_fora_real
-    )
+
+def pontos_mata_mata(
+    gc_palpite: int,
+    gf_palpite: int,
+    classif_palpite: str | None,
+    time_casa: str,
+    time_fora: str,
+    gc_real: int | None,
+    gf_real: int | None,
+    classif_real: str | None,
+) -> int:
+    """Pontos de um palpite contra um placar de mata-mata qualquer."""
+    if gc_real is None or gf_real is None or not classif_real:
+        return 0
+    # Classificado implícito pelo palpite (ou o escolhido, se empate).
+    if gc_palpite > gf_palpite:
+        classif_p = time_casa
+    elif gf_palpite > gc_palpite:
+        classif_p = time_fora
+    else:
+        classif_p = classif_palpite
+    if classif_p != classif_real:
+        return 0
+    placar_exato = gc_palpite == gc_real and gf_palpite == gf_real
     return 3 if placar_exato else 1
 
 
+# --- Wrappers de conveniência (resultado OFICIAL) ----------------------
+def calcular_pontos_grupos(palpite: Palpite, jogo: Jogo) -> int:
+    return pontos_grupos(
+        palpite.gols_casa_palpite,
+        palpite.gols_fora_palpite,
+        jogo.gols_casa_real,
+        jogo.gols_fora_real,
+    )
+
+
+def calcular_pontos_mata_mata(palpite: Palpite, jogo: Jogo) -> int:
+    return pontos_mata_mata(
+        palpite.gols_casa_palpite,
+        palpite.gols_fora_palpite,
+        palpite.classificado_palpite,
+        jogo.time_casa,
+        jogo.time_fora,
+        jogo.gols_casa_real,
+        jogo.gols_fora_real,
+        jogo.classificado_real,
+    )
+
+
 def calcular_pontos(palpite: Palpite, jogo: Jogo) -> int:
-    """Despacha para a regra correta conforme a fase do jogo."""
+    """Despacha para a regra correta conforme a fase do jogo (resultado oficial)."""
     if jogo.is_mata_mata:
         return calcular_pontos_mata_mata(palpite, jogo)
     return calcular_pontos_grupos(palpite, jogo)
+
+
+# --- Pontuação PROVISÓRIA (placar ao vivo) -----------------------------
+def pontos_provisorios(palpite: Palpite, jogo: Jogo) -> int:
+    """Pontos que o palpite faria com o placar parcial atual (ao vivo).
+
+    No mata-mata, o classificado provisório é quem está na frente (ninguém
+    pontua enquanto estiver empatado, pois o classificado ainda é indefinido).
+    """
+    gc, gf = jogo.gols_casa_ao_vivo, jogo.gols_fora_ao_vivo
+    if gc is None or gf is None:
+        return 0
+    if jogo.is_mata_mata:
+        if gc > gf:
+            classif = jogo.time_casa
+        elif gf > gc:
+            classif = jogo.time_fora
+        else:
+            classif = None
+        return pontos_mata_mata(
+            palpite.gols_casa_palpite,
+            palpite.gols_fora_palpite,
+            palpite.classificado_palpite,
+            jogo.time_casa,
+            jogo.time_fora,
+            gc,
+            gf,
+            classif,
+        )
+    return pontos_grupos(
+        palpite.gols_casa_palpite, palpite.gols_fora_palpite, gc, gf
+    )
 
 
 def aplicar_resultado(
@@ -102,13 +149,14 @@ def aplicar_resultado(
 ) -> int:
     """Registra o resultado oficial e pontua todos os palpites do jogo.
 
-    Marca o jogo como FINALIZADO, grava `pontos` em cada palpite e faz commit.
-    Retorna a quantidade de palpites pontuados.
+    Marca o jogo como FINALIZADO, encerra o "ao vivo", grava `pontos` em cada
+    palpite e faz commit. Retorna a quantidade de palpites pontuados.
     """
     jogo.gols_casa_real = gols_casa
     jogo.gols_fora_real = gols_fora
     jogo.classificado_real = classificado_real if jogo.is_mata_mata else None
     jogo.status = StatusJogo.FINALIZADO
+    jogo.ao_vivo = False  # acabou: sai da tabela ao vivo
 
     for palpite in jogo.palpites:
         palpite.pontos = calcular_pontos(palpite, jogo)

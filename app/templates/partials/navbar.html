@@ -9,9 +9,9 @@
       navegação focada no painel. O participante vê as telas do bolão.
     #}
     {% if usuario.is_admin %}
-      {% set nav = [("/admin", "⚙️ Painel"), ("/admin/jogos", "Jogos"), ("/admin/resultados", "Resultados"), ("/admin/mata-mata", "Mata-mata"), ("/ranking", "Ranking")] %}
+      {% set nav = [("/admin", "⚙️ Painel"), ("/admin/jogos", "Jogos"), ("/admin/resultados", "Resultados"), ("/admin/ao-vivo", "🔴 Ao Vivo"), ("/admin/mata-mata", "Mata-mata"), ("/ranking", "Ranking")] %}
     {% else %}
-      {% set nav = [("/", "Dashboard"), ("/jogos", "Jogos"), ("/palpites", "Meus Palpites"), ("/ranking", "Ranking"), ("/historico", "Histórico")] %}
+      {% set nav = [("/", "Dashboard"), ("/jogos", "Jogos"), ("/palpites", "Meus Palpites"), ("/ao-vivo", "🔴 Ao Vivo"), ("/ranking", "Ranking"), ("/historico", "Histórico")] %}
     {% endif %}
 
     <!-- Links desktop -->

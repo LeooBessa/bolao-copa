@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import DateTime, Integer, String, func
+from sqlalchemy import Boolean, DateTime, Integer, String, func
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -48,6 +48,12 @@ class Jogo(Base):
         nullable=False,
         index=True,
     )
+
+    # Tabela ao vivo: placar parcial enquanto o jogo acontece (não é o
+    # resultado oficial — serve para a pontuação provisória em tempo real).
+    ao_vivo: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    gols_casa_ao_vivo: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    gols_fora_ao_vivo: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     data_jogo: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )
