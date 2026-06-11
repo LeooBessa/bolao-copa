@@ -36,10 +36,10 @@
                   {% endif %}
                 </td>
                 <td class="px-4 py-3 text-center">
-                  {% if item.travado %}
+                  {% if item.revela %}
                     <a href="/jogos/{{ j.id }}/palpites" class="text-xs font-semibold text-brand-600 hover:underline whitespace-nowrap">👁 ver todos</a>
                   {% else %}
-                    <span class="text-xs text-slate-300">🔒</span>
+                    <span class="text-xs text-slate-300" title="Disponível quando o jogo começar">🔒</span>
                   {% endif %}
                 </td>
               </tr>

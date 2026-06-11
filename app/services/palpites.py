@@ -25,6 +25,17 @@ def palpite_travado(jogo: Jogo) -> bool:
     return now_utc() >= ensure_aware(jogo.data_jogo)
 
 
+def jogo_revela_palpites(jogo: Jogo) -> bool:
+    """Diz se os palpites de todos já podem ser vistos.
+
+    Só libera quando o jogo realmente começa (chegou o horário) ou quando já
+    foi finalizado. Fechar a aposta antes do horário NÃO revela os palpites.
+    """
+    if jogo.status == StatusJogo.FINALIZADO:
+        return True
+    return now_utc() >= ensure_aware(jogo.data_jogo)
+
+
 def fechar_todos_palpites(db: Session) -> int:
     """Trava TODOS os jogos não finalizados (ninguém pode palpitar). Retorna nº alterado."""
     n = 0

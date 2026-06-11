@@ -17,7 +17,11 @@ from app.models.jogo import Jogo
 from app.models.palpite import Palpite
 from app.models.usuario import Usuario
 from app.schemas.palpite import PalpiteInput
-from app.services.palpites import palpite_travado, salvar_palpite
+from app.services.palpites import (
+    jogo_revela_palpites,
+    palpite_travado,
+    salvar_palpite,
+)
 from app.templating import render
 from app.utils.time import ensure_aware
 
@@ -50,6 +54,7 @@ def meus_palpites(
                 "jogo": j,
                 "palpite": palpites.get(j.id),
                 "travado": palpite_travado(j),
+                "revela": jogo_revela_palpites(j),
             }
         )
     fases_ordenadas = sorted(grupos.items(), key=lambda kv: ORDEM_FASES[kv[0]])

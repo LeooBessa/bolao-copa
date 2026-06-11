@@ -16,7 +16,7 @@ from app.models.enums import ORDEM_FASES, Fase, StatusJogo
 from app.models.jogo import Jogo
 from app.models.palpite import Palpite
 from app.models.usuario import Usuario
-from app.services.palpites import palpite_travado
+from app.services.palpites import jogo_revela_palpites, palpite_travado
 from app.templating import render
 from app.utils.time import ensure_aware
 
@@ -47,6 +47,7 @@ def listar_jogos(
                 "jogo": j,
                 "palpite": palpites.get(j.id),
                 "travado": palpite_travado(j),
+                "revela": jogo_revela_palpites(j),
             }
         )
 
@@ -78,8 +79,8 @@ def palpites_dos_adversarios(
     if jogo is None:
         return RedirectResponse(url="/jogos?erro=Jogo+nao+encontrado", status_code=303)
 
-    if not palpite_travado(jogo):
-        msg = quote("Os palpites dos outros aparecem quando o jogo começa.")
+    if not jogo_revela_palpites(jogo):
+        msg = quote("Os palpites dos outros só aparecem quando o jogo começar.")
         return RedirectResponse(url=f"/jogos?erro={msg}", status_code=303)
 
     # Palpites de todos os participantes (não-admin) para este jogo.
