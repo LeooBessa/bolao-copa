@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.auth.dependencies import get_current_user
 from app.database.session import get_db
 from app.models.usuario import Usuario
-from app.services.ranking import montar_ranking
+from app.services.ranking import ha_ao_vivo, montar_ranking
 from app.templating import render
 
 router = APIRouter(tags=["ranking"])
@@ -20,10 +20,13 @@ def ranking(
     usuario: Usuario = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> object:
-    linhas = montar_ranking(db)
     return render(
         request,
         "ranking.html",
-        {"linhas": linhas, "meu_id": usuario.id},
+        {
+            "linhas": montar_ranking(db),
+            "meu_id": usuario.id,
+            "ao_vivo": ha_ao_vivo(db),
+        },
         usuario=usuario,
     )

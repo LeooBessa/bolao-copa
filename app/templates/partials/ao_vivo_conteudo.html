@@ -64,9 +64,9 @@
               <td class="px-4 py-3 font-medium text-slate-700">
                 {{ l.nome }}{% if l.usuario_id == meu_id %} <span class="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-semibold text-brand-700">você</span>{% endif %}
               </td>
-              <td class="px-4 py-3 text-center text-slate-500">{{ l.oficial }}</td>
+              <td class="px-4 py-3 text-center text-slate-500">{{ l.pontos }}</td>
               <td class="px-4 py-3 text-center">
-                {% if l.provisorio %}<span class="font-semibold text-rose-500">+{{ l.provisorio }}</span>{% else %}<span class="text-slate-300">—</span>{% endif %}
+                {% if l.ao_vivo %}<span class="font-semibold text-rose-500">+{{ l.ao_vivo }}</span>{% else %}<span class="text-slate-300">—</span>{% endif %}
               </td>
               <td class="px-4 py-3 text-right text-lg font-extrabold text-brand-600">{{ l.total }}</td>
             </tr>

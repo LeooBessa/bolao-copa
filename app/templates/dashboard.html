@@ -10,14 +10,18 @@
   </header>
 
   <!-- Cartões de estatística -->
-  <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+  <div id="dashboard-stats" class="grid grid-cols-2 gap-4 lg:grid-cols-4">
     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Pontuação</p>
       <p class="mt-1 text-3xl font-extrabold text-brand-600">{{ pontos }}</p>
+      {% if ao_vivo_pts %}
+        <p class="mt-1 text-xs font-semibold text-rose-500">🔴 inclui +{{ ao_vivo_pts }} ao vivo</p>
+      {% endif %}
     </div>
     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Posição</p>
       <p class="mt-1 text-3xl font-extrabold text-slate-900">{{ posicao }}<span class="text-base font-medium text-slate-400">/{{ total_jogadores }}</span></p>
+      {% if ao_vivo %}<p class="mt-1 text-xs font-medium text-rose-500">provisória</p>{% endif %}
     </div>
     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Acertos</p>
@@ -77,4 +81,27 @@
     </section>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{% if ao_vivo %}
+<script>
+  // Durante um jogo ao vivo, atualiza só os cartões (pontuação e posição),
+  // de forma suave, sem recarregar a página.
+  async function atualizarStats() {
+    try {
+      const r = await fetch(location.pathname, {
+        cache: "no-store",
+        headers: { "X-Requested-With": "fetch" },
+      });
+      if (!r.ok) return;
+      const doc = new DOMParser().parseFromString(await r.text(), "text/html");
+      const novo = doc.getElementById("dashboard-stats");
+      const atual = document.getElementById("dashboard-stats");
+      if (novo && atual) atual.innerHTML = novo.innerHTML;
+    } catch (e) {}
+  }
+  setInterval(atualizarStats, 8000);
+</script>
+{% endif %}
 {% endblock %}

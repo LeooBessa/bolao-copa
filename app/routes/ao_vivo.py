@@ -13,7 +13,8 @@ from sqlalchemy.orm import Session
 from app.auth.dependencies import get_current_user
 from app.database.session import get_db
 from app.models.usuario import Usuario
-from app.services.ao_vivo import montar_tabela_ao_vivo, ranking_ao_vivo
+from app.services.ao_vivo import montar_tabela_ao_vivo
+from app.services.ranking import montar_ranking
 from app.templating import render, templates
 
 router = APIRouter(tags=["ao-vivo"])
@@ -26,7 +27,7 @@ def ao_vivo(
     db: Session = Depends(get_db),
 ) -> object:
     tabelas = montar_tabela_ao_vivo(db)
-    ranking = ranking_ao_vivo(db)
+    ranking = montar_ranking(db)
     return render(
         request,
         "ao_vivo.html",
@@ -43,7 +44,7 @@ def ao_vivo_fragmento(
 ) -> object:
     """Retorna SÓ o conteúdo dinâmico (HTML), para o polling suave via fetch."""
     tabelas = montar_tabela_ao_vivo(db)
-    ranking = ranking_ao_vivo(db)
+    ranking = montar_ranking(db)
     return templates.TemplateResponse(
         request=request,
         name="partials/ao_vivo_conteudo.html",

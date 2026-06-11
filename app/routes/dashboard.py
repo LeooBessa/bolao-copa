@@ -11,7 +11,7 @@ from app.database.session import get_db
 from app.models.enums import ORDEM_FASES, StatusJogo
 from app.models.jogo import Jogo
 from app.models.usuario import Usuario
-from app.services.ranking import posicao_do_usuario
+from app.services.ranking import ha_ao_vivo, posicao_do_usuario
 from app.templating import render
 from app.utils.time import ensure_aware, now_utc
 
@@ -50,12 +50,15 @@ def dashboard(
     )
 
     contexto = {
-        "pontos": linha.pontos if linha else 0,
+        # 'pontos' já inclui a parcela provisória dos jogos ao vivo (total).
+        "pontos": linha.total if linha else 0,
+        "ao_vivo_pts": linha.ao_vivo if linha else 0,
         "posicao": linha.posicao if linha else "-",
         "acertos": linha.acertos if linha else 0,
         "total_palpites": linha.total_palpites if linha else 0,
         "total_jogadores": total_jogadores,
         "proximos": proximos,
         "ultimos_resultados": ultimos_resultados,
+        "ao_vivo": ha_ao_vivo(db),
     }
     return render(request, "dashboard.html", contexto, usuario=usuario)

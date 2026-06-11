@@ -4,43 +4,89 @@
 {% block content %}
 <div class="fade-in space-y-6">
   <header>
-    <h1 class="text-2xl font-extrabold text-slate-900">Ranking geral</h1>
-    <p class="text-sm text-slate-500">Classificação atualizada conforme os resultados são registrados.</p>
+    <h1 class="flex items-center gap-2 text-2xl font-extrabold text-slate-900">
+      Ranking geral
+      {% if ao_vivo %}
+        <span class="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-600">
+          <span class="relative flex h-2 w-2">
+            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-rose-500"></span>
+          </span>
+          ao vivo
+        </span>
+      {% endif %}
+    </h1>
+    <p class="text-sm text-slate-500">
+      {% if ao_vivo %}
+        Inclui a pontuação provisória dos jogos em andamento. Atualiza sozinho.
+      {% else %}
+        Classificação atualizada conforme os resultados são registrados.
+      {% endif %}
+    </p>
   </header>
 
-  <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-    <table class="min-w-full divide-y divide-slate-100 text-sm">
-      <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-400">
-        <tr>
-          <th class="px-4 py-3 text-left">#</th>
-          <th class="px-4 py-3 text-left">Participante</th>
-          <th class="px-4 py-3 text-center">Acertos</th>
-          <th class="px-4 py-3 text-center">Palpites</th>
-          <th class="px-4 py-3 text-right">Pontos</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-slate-100">
-        {% for l in linhas %}
-          <tr class="{% if l.usuario_id == meu_id %}bg-brand-50{% else %}hover:bg-slate-50{% endif %}">
-            <td class="px-4 py-3">
-              {% if l.posicao == 1 %}<span class="text-lg">🥇</span>
-              {% elif l.posicao == 2 %}<span class="text-lg">🥈</span>
-              {% elif l.posicao == 3 %}<span class="text-lg">🥉</span>
-              {% else %}<span class="font-semibold text-slate-400">{{ l.posicao }}</span>{% endif %}
-            </td>
-            <td class="px-4 py-3 font-medium text-slate-700">
-              {{ l.nome }}
-              {% if l.usuario_id == meu_id %}<span class="ml-1 rounded-full bg-brand-100 px-2 py-0.5 text-xs font-semibold text-brand-700">você</span>{% endif %}
-            </td>
-            <td class="px-4 py-3 text-center text-emerald-600">{{ l.acertos }}</td>
-            <td class="px-4 py-3 text-center text-slate-500">{{ l.total_palpites }}</td>
-            <td class="px-4 py-3 text-right text-lg font-extrabold text-brand-600">{{ l.pontos }}</td>
+  <div id="ranking-conteudo">
+    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <table class="min-w-full divide-y divide-slate-100 text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-400">
+          <tr>
+            <th class="px-4 py-3 text-left">#</th>
+            <th class="px-4 py-3 text-left">Participante</th>
+            <th class="px-4 py-3 text-center">Acertos</th>
+            {% if ao_vivo %}<th class="px-4 py-3 text-center">Ao vivo</th>{% endif %}
+            <th class="px-4 py-3 text-right">Pontos</th>
           </tr>
-        {% else %}
-          <tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">Nenhum participante ainda.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for l in linhas %}
+            <tr class="{% if l.usuario_id == meu_id %}bg-brand-50{% else %}hover:bg-slate-50{% endif %}">
+              <td class="px-4 py-3">
+                {% if l.posicao == 1 %}<span class="text-lg">🥇</span>
+                {% elif l.posicao == 2 %}<span class="text-lg">🥈</span>
+                {% elif l.posicao == 3 %}<span class="text-lg">🥉</span>
+                {% else %}<span class="font-semibold text-slate-400">{{ l.posicao }}</span>{% endif %}
+              </td>
+              <td class="px-4 py-3 font-medium text-slate-700">
+                {{ l.nome }}
+                {% if l.usuario_id == meu_id %}<span class="ml-1 rounded-full bg-brand-100 px-2 py-0.5 text-xs font-semibold text-brand-700">você</span>{% endif %}
+              </td>
+              <td class="px-4 py-3 text-center text-emerald-600">{{ l.acertos }}</td>
+              {% if ao_vivo %}
+                <td class="px-4 py-3 text-center">
+                  {% if l.ao_vivo %}<span class="font-semibold text-rose-500">+{{ l.ao_vivo }}</span>{% else %}<span class="text-slate-300">—</span>{% endif %}
+                </td>
+              {% endif %}
+              <td class="px-4 py-3 text-right text-lg font-extrabold text-brand-600">{{ l.total }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">Nenhum participante ainda.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{% if ao_vivo %}
+<script>
+  // Atualização suave: durante um jogo ao vivo, recarrega só a tabela do
+  // ranking (com a pontuação provisória), sem recarregar a página.
+  async function atualizarRanking() {
+    try {
+      const r = await fetch(location.pathname, {
+        cache: "no-store",
+        headers: { "X-Requested-With": "fetch" },
+      });
+      if (!r.ok) return;
+      const doc = new DOMParser().parseFromString(await r.text(), "text/html");
+      const novo = doc.getElementById("ranking-conteudo");
+      const atual = document.getElementById("ranking-conteudo");
+      if (novo && atual) atual.innerHTML = novo.innerHTML;
+    } catch (e) {}
+  }
+  setInterval(atualizarRanking, 8000);
+</script>
+{% endif %}
 {% endblock %}
