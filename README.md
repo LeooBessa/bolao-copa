@@ -1,4 +1,4 @@
-# 🏆 Bolão da Copa do Mundo Arianjo
+# 🏆 Bolão da Copa do Mundo
 
 Sistema completo de bolão da Copa do Mundo 2026 (formato 48 times / 12 grupos),
 para ~8 participantes. Cada usuário cria conta, registra palpites, acompanha

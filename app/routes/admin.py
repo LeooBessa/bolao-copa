@@ -152,10 +152,9 @@ def ao_vivo_iniciar(
     if jogo is None or jogo.status == StatusJogo.FINALIZADO:
         return _redir("/admin/ao-vivo", erro="Jogo inválido.")
     jogo.ao_vivo = True
-    if jogo.gols_casa_ao_vivo is None:
-        jogo.gols_casa_ao_vivo = 0
-    if jogo.gols_fora_ao_vivo is None:
-        jogo.gols_fora_ao_vivo = 0
+    # Sempre começa em 0x0 (zera qualquer placar de uma transmissão anterior).
+    jogo.gols_casa_ao_vivo = 0
+    jogo.gols_fora_ao_vivo = 0
     db.commit()
     return _redir("/admin/ao-vivo", msg=f"🔴 {jogo.time_casa} x {jogo.time_fora} está AO VIVO.")
 

@@ -1,4 +1,4 @@
-# 🏗️ Arquitetura & Roteiro de Defesa — Bolão da Copa do Mundo Arianjo
+# 🏗️ Arquitetura & Roteiro de Defesa — Bolão da Copa do Mundo
 
 > Documento de apoio para a apresentação da A3 (UC **Sistemas Distribuídos e
 > Mobile** / **Usabilidade, Desenvolvimento Web, Mobile e Jogos**).

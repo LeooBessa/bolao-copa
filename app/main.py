@@ -28,7 +28,7 @@ from app.templating import STATIC_DIR
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="Bolão da Copa do Mundo Arianjo",
+        title="Bolão da Copa do Mundo",
         docs_url=None,  # API interna; sem Swagger público
         redoc_url=None,
     )
