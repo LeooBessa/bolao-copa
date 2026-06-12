@@ -53,7 +53,14 @@ def montar_ranking(db: Session) -> list[LinhaRanking]:
         ao_vivo = sum(
             pontos_provisorios(p, live[p.jogo_id]) for p in ps if p.jogo_id in live
         )
+        # Acertos = palpites já pontuados (oficial) + os que estão pontuando
+        # provisoriamente nos jogos ao vivo.
         acertos = sum(1 for p in ps if p.pontos > 0)
+        acertos += sum(
+            1
+            for p in ps
+            if p.jogo_id in live and pontos_provisorios(p, live[p.jogo_id]) > 0
+        )
         linhas.append(
             LinhaRanking(
                 posicao=0,
