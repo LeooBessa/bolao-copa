@@ -328,10 +328,20 @@ def tela_resultados(
     msg: str | None = None,
     erro: str | None = None,
 ) -> object:
+    jogos = _jogos_ordenados(db)
+    # Jogos já finalizados saem da lista principal (vão para um bloco recolhido),
+    # deixando no topo só os que ainda precisam de resultado.
+    pendentes = [j for j in jogos if j.status != StatusJogo.FINALIZADO]
+    finalizados = [j for j in jogos if j.status == StatusJogo.FINALIZADO]
     return render(
         request,
         "admin/resultados.html",
-        {"jogos": _jogos_ordenados(db), "msg": msg, "erro": erro},
+        {
+            "pendentes": pendentes,
+            "finalizados": finalizados,
+            "msg": msg,
+            "erro": erro,
+        },
         usuario=admin,
     )
 
