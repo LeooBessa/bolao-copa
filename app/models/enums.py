@@ -26,7 +26,7 @@ class Fase(str, enum.Enum):
         """Rótulo amigável para exibição na UI."""
         return {
             Fase.GRUPOS: "Fase de Grupos",
-            Fase.TRINTA_E_DOIS_AVOS: "32 avos de final",
+            Fase.TRINTA_E_DOIS_AVOS: "16 avos de final",
             Fase.OITAVAS: "Oitavas de final",
             Fase.QUARTAS: "Quartas de final",
             Fase.SEMIFINAL: "Semifinal",

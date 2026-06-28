@@ -16,7 +16,12 @@ from app.models.enums import ORDEM_FASES, Fase, StatusJogo
 from app.models.jogo import Jogo
 from app.models.palpite import Palpite
 from app.models.usuario import Usuario
-from app.services.palpites import jogo_revela_palpites, palpite_travado
+from app.services.palpites import (
+    abertura_palpite,
+    jogo_revela_palpites,
+    palpite_disponivel,
+    palpite_travado,
+)
 from app.templating import render
 from app.utils.time import ensure_aware
 
@@ -46,8 +51,10 @@ def listar_jogos(
             {
                 "jogo": j,
                 "palpite": palpites.get(j.id),
+                "disponivel": palpite_disponivel(j),
                 "travado": palpite_travado(j),
                 "revela": jogo_revela_palpites(j),
+                "abre_em": abertura_palpite(j).strftime("%d/%m"),
             }
         )
 

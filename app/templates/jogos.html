@@ -29,8 +29,10 @@
                 <td class="px-4 py-3 text-center">
                   {% if item.palpite %}
                     <span class="text-xs font-medium text-brand-600">{{ item.palpite.gols_casa_palpite }}x{{ item.palpite.gols_fora_palpite }}</span>
-                  {% elif not item.travado %}
+                  {% elif item.disponivel %}
                     <a href="/palpites" class="text-xs font-medium text-brand-600 hover:underline">palpitar</a>
+                  {% elif not item.travado %}
+                    <span class="text-xs font-medium text-amber-600 whitespace-nowrap">abre {{ item.abre_em }}</span>
                   {% else %}
                     <span class="text-xs text-slate-300">—</span>
                   {% endif %}

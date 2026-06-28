@@ -18,7 +18,9 @@ from app.models.palpite import Palpite
 from app.models.usuario import Usuario
 from app.schemas.palpite import PalpiteInput
 from app.services.palpites import (
+    abertura_palpite,
     jogo_revela_palpites,
+    palpite_disponivel,
     palpite_travado,
     salvar_palpite,
 )
@@ -53,8 +55,10 @@ def meus_palpites(
             {
                 "jogo": j,
                 "palpite": palpites.get(j.id),
+                "disponivel": palpite_disponivel(j),
                 "travado": palpite_travado(j),
                 "revela": jogo_revela_palpites(j),
+                "abre_em": abertura_palpite(j).strftime("%d/%m"),
             }
         )
     fases_ordenadas = sorted(grupos.items(), key=lambda kv: ORDEM_FASES[kv[0]])
@@ -83,11 +87,14 @@ def salvar(
             url="/palpites?erro=Jogo+n%C3%A3o+encontrado", status_code=303
         )
 
-    if palpite_travado(jogo):
-        return RedirectResponse(
-            url="/palpites?erro=Palpites+travados+para+este+jogo",
-            status_code=303,
-        )
+    if not palpite_disponivel(jogo):
+        from urllib.parse import quote
+
+        if palpite_travado(jogo):
+            msg = "Palpites travados para este jogo."
+        else:
+            msg = f"Este jogo abre para palpite em {abertura_palpite(jogo).strftime('%d/%m')}."
+        return RedirectResponse(url=f"/palpites?erro={quote(msg)}", status_code=303)
 
     try:
         dados = PalpiteInput(

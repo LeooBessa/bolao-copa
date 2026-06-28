@@ -11,7 +11,7 @@ from app.models.enums import Fase, StatusJogo
 from app.models.jogo import Jogo
 from app.models.palpite import Palpite
 from app.schemas.palpite import PalpiteInput
-from app.utils.time import ensure_aware, now_utc
+from app.utils.time import BRASILIA, ensure_aware, now_utc
 
 
 def palpite_travado(jogo: Jogo) -> bool:
@@ -23,6 +23,29 @@ def palpite_travado(jogo: Jogo) -> bool:
     if jogo.status in (StatusJogo.FECHADO, StatusJogo.FINALIZADO):
         return True
     return now_utc() >= ensure_aware(jogo.data_jogo)
+
+
+def abertura_palpite(jogo: Jogo):
+    """Momento em que o jogo abre para palpite: 00h (Brasília) do dia da partida.
+
+    Para jogos à 00h (madrugada), abre no dia anterior, senão não haveria
+    janela de palpite.
+    """
+    kickoff = ensure_aware(jogo.data_jogo).astimezone(BRASILIA)
+    abertura = kickoff.replace(hour=0, minute=0, second=0, microsecond=0)
+    if abertura >= kickoff:
+        abertura = abertura - timedelta(days=1)
+    return abertura
+
+
+def palpite_disponivel(jogo: Jogo) -> bool:
+    """True se o jogo aceita palpite AGORA.
+
+    Precisa estar aberto (não travado) e já ter chegado a abertura do dia.
+    """
+    if palpite_travado(jogo):
+        return False
+    return now_utc() >= abertura_palpite(jogo)
 
 
 def jogo_revela_palpites(jogo: Jogo) -> bool:
@@ -81,11 +104,14 @@ def salvar_palpite(
 ) -> Palpite:
     """Cria ou atualiza (upsert) o palpite do usuário para um jogo.
 
-    Lança ValueError se o jogo já estiver travado. Não recalcula pontos aqui:
-    a pontuação só é gravada quando o admin finaliza o resultado.
+    Lança ValueError se o jogo não estiver disponível (ainda não abriu ou já
+    travou). Não recalcula pontos aqui: a pontuação só é gravada quando o admin
+    finaliza o resultado.
     """
-    if palpite_travado(jogo):
-        raise ValueError("Os palpites deste jogo estão travados.")
+    if not palpite_disponivel(jogo):
+        if palpite_travado(jogo):
+            raise ValueError("Os palpites deste jogo estão travados.")
+        raise ValueError("Este jogo ainda não abriu para palpite.")
 
     palpite = buscar_palpite(db, usuario_id=usuario_id, jogo_id=jogo.id)
     if palpite is None:
