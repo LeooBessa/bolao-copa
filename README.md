@@ -52,10 +52,11 @@ api/index.py           Entrypoint da Vercel
 - Acertou o resultado (vitória/empate) → **1 ponto**
 - Errou → **0**
 
-**Mata-mata** (o classificado faz parte do resultado; empate sozinho não pontua)
-- Placar exato **+** classificado correto → **3 pontos**
-- Classificado correto (placar errado) → **1 ponto**
-- Acertou empate mas errou quem avança → **0**
+**Mata-mata** (pontuação somada por partes; máximo **4**)
+- Acertar quem se classifica → **+1**
+- Placar exato (sem ser empate) → **+2**
+- Acertou que foi empate (placar diferente) → **+2**
+- Placar exato de empate → **+3**
 
 A pontuação é **gravada** quando o admin registra o resultado oficial — nunca
 recalculada a cada carregamento de página. Palpites **travam** automaticamente

@@ -7,11 +7,11 @@ Fase de grupos
   - acertou o resultado (1/X/2) ............. 1 ponto
   - errou .................................... 0 pontos
 
-Mata-mata (o classificado faz parte do resultado; empate sozinho não pontua)
-  - placar exato + classificado correto ..... 3 pontos
-  - classificado correto (placar errado) .... 1 ponto
-  - acertou empate mas errou classificado ... 0 pontos
-  - errou ................................... 0 pontos
+Mata-mata (pontuação somada por partes; máximo 4)
+  - acertar quem se classifica .............. +1
+  - placar exato (sem ser empate) ........... +2
+  - acertou que foi empate (placar errado) .. +2
+  - placar exato de empate .................. +3
 
 A pontuação oficial é GRAVADA em `palpite.pontos` quando o admin registra o
 resultado (`aplicar_resultado`). As mesmas regras são reaproveitadas para a
@@ -61,20 +61,43 @@ def pontos_mata_mata(
     gf_real: int | None,
     classif_real: str | None,
 ) -> int:
-    """Pontos de um palpite contra um placar de mata-mata qualquer."""
-    if gc_real is None or gf_real is None or not classif_real:
+    """Pontos de um palpite contra um placar de mata-mata qualquer.
+
+    A pontuação é somada por partes:
+      +1  por acertar quem se classifica
+      +   placar exato (sem ser empate) .......... 2
+      +   acertou que foi empate (placar errado) .. 2
+      +   placar exato de empate ................... 3
+    Máximo: 4 (quem passa + placar exato de empate).
+    """
+    if gc_real is None or gf_real is None:
         return 0
-    # Classificado implícito pelo palpite (ou o escolhido, se empate).
+
+    # Quem o palpite diz que se classifica (implícito pelo placar; no empate,
+    # é o time escolhido em "quem avança?").
     if gc_palpite > gf_palpite:
         classif_p = time_casa
     elif gf_palpite > gc_palpite:
         classif_p = time_fora
     else:
         classif_p = classif_palpite
-    if classif_p != classif_real:
-        return 0
-    placar_exato = gc_palpite == gc_real and gf_palpite == gf_real
-    return 3 if placar_exato else 1
+
+    pontos = 0
+    # +1 por acertar quem avança.
+    if classif_real and classif_p == classif_real:
+        pontos += 1
+
+    # Pontos pelo placar / resultado.
+    exato = gc_palpite == gc_real and gf_palpite == gf_real
+    real_empate = gc_real == gf_real
+    palpite_empate = gc_palpite == gf_palpite
+    if exato and real_empate:
+        pontos += 3        # placar exato de empate
+    elif exato:
+        pontos += 2        # placar exato (sem ser empate)
+    elif palpite_empate and real_empate:
+        pontos += 2        # acertou que foi empate, placar diferente
+    return pontos
 
 
 # --- Wrappers de conveniência (resultado OFICIAL) ----------------------
